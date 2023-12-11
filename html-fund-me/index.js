@@ -3,8 +3,8 @@
 
 // in frontend javascript you can't use require
 // import
-import { ethers } from "./ethers-esm"
-import { abi, contractAddress } from "./constants"
+import { ethers } from "./ethers-esm.js"
+import { abi, contractAddress } from "./constants.js"
 console.log(abi)
 console.log(contractAddress)
 
@@ -58,6 +58,22 @@ async function fund() {
     }
 }
 
+async function withdraw() {
+    if (typeof window.ethereum != "undefined") {
+        console.log("Withdrawing...")
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        const signer = provider.getSigner()
+        const contract = new ethers.Contract(contractAddress, abi, signer)
+        try {
+            const transactionResponse = await contract.withdraw()
+            await listenForTransactionMine(transactionResponse, provider)
+            console.log("Done!")
+        } catch (error) {
+            console.log(error)
+        }
+    }
+}
+
 function listenForTransactionMine(transactionResponse, provider) {
     console.log(`Mining ${transactionResponse.hash}...`)
     // listen for this transaction to finish
@@ -69,21 +85,4 @@ function listenForTransactionMine(transactionResponse, provider) {
             resolve()
         })
     })
-}
-
-async function withdraw() {
-    if (window.ethereum != undefined) {
-        console.log("Withdrawing...")
-        const provider = new ethers.providers.Web3Provider(window.ethereum)
-        const signer = provider.getSigner()
-        const contract = new ethers.Contract(contractAddress, abi, signer)
-        try {
-            const transactionResponse = await contract.withdraw
-            // hey wait for this tx to finish
-            await listenForTransactionMine(transactionResponse, provider)
-            console.log("Done!")
-        } catch (error) {
-            console.log(error)
-        }
-    }
 }
